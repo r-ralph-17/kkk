@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Charité - Application Chrétienne</title>
+  <meta name="description" content="Application chrétienne avec verset du jour, méditations, cantiques, partage et plus." />
+  <meta name="keywords" content="Bible, verset, méditation, chrétien, cantiques, partage" />
+  <meta name="author" content="Votre Nom" />
+  <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet" />
+  <style>
+    /* (Conservez ici tout votre CSS existant, inchangé) */
+    /* Variables et styles de base (mode clair + sombre) */
+    :root {
+      --primary-color: #4a6fa5;
+      --secondary-color: #166088;
+      --accent-color: #4fc3f7;
+      --light-color: #f8f9fa;
+      --dark-color: #343a40;
+      --error-color: #d9534f;
+      --success-color: #28a745;
+      --background-light: var(--light-color);
+      --background-dark: #121212;
+      --text-light: var(--dark-color);
+      --text-dark: #eee;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0; padding: 0;
+      background-color: var(--background-light);
+      color: var(--text-light);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    body.dark-mode {
+      background-color: var(--background-dark);
+      color: var(--text-dark);
+    }
+    header {
+      background-color: var(--primary-color);
+      color: white;
+      padding: 1rem;
+      text-align: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    nav {
+      display: flex;
+      justify-content: space-around;
+      background-color: var(--secondary-color);
+      padding: 0.5rem;
+    }
+    nav a {
+      color: white;
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      transition: background-color 0.3s;
+      outline-offset: 2px;
+    }
+    nav a:hover, nav a:focus {
+      background-color: var(--accent-color);
+      outline: 2px solid var(--accent-color);
+      outline-offset: 2px;
+    }
+    nav a.active {
+      background-color: var(--accent-color);
+      font-weight: bold;
+      box-shadow: 0 0 8px var(--accent-color);
+    }
+    .container {
+      max-width: 1200px;
+      margin: 1rem auto 2rem;
+      padding: 1rem;
+      flex-grow: 1;
+    }
+    .verse-of-the-day {
+      background-color: white;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin: 1rem 0;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      text-align: center;
+      border-left: 5px solid var(--accent-color);
+      transition: background-color 0.3s, color 0.3s;
+    }
+    body.dark-mode .verse-of-the-day {
+      background-color: #222;
+      color: var(--text-dark);
+      border-left-color: var(--accent-color);
+      box-shadow: 0 2px 10px rgba(255,255,255,0.1);
+    }
+    .verse-text {
+      font-size: 1.2rem;
+      margin-bottom: 0.5rem;
+    }
+    .verse-ref {
+      font-weight: bold;
+      color: var(--secondary-color);
+    }
+    body.dark-mode .verse-ref {
+      color: var(--accent-color);
+    }
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1rem;
+      margin: 2rem 0;
+    }
+    .feature-card {
+      background-color: white;
+      border-radius: 8px;
+      padding: 1.5rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      transition: transform 0.3s, background-color 0.3s, color 0.3s;
+    }
+    body.dark-mode .feature-card {
+      background-color: #222;
+      color: var(--text-dark);
+      box-shadow: 0 2px 10px rgba(255,255,255,0.1);
+    }
+    .feature-card:hover {
+      transform: translateY(-5px);
+    }
+    .feature-card h3 {
+      color: var(--primary-color);
+      border-bottom: 2px solid var(--accent-color);
+      padding-bottom: 0.5rem;
+    }
+    body.dark-mode .feature-card h3 {
+      color: var(--accent-color);
+    }
+    footer {
+      background-color: var(--dark-color);
+      color: white;
+      text-align: center;
+      padding: 1.5rem;
+      margin-top: auto;
+    }
+    #admin-form {
+      background: white;
+      padding: 1rem 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      max-width: 700px;
+      margin: 2rem auto;
+      display: none;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    body.dark-mode #admin-form {
+      background: #222;
+      color: var(--text-dark);
+      box-shadow: 0 2px 10px rgba(255,255,255,0.1);
+    }
+    #admin-form label {
+      display: block;
+      margin-bottom: 0.3rem;
+      font-weight: 600;
+      color: var(--dark-color);
+    }
+    body.dark-mode #admin-form label {
+      color: var(--text-dark);
+    }
+    #admin-form input, #admin-form textarea {
+      width: 100%;
+      margin-bottom: 0.8rem;
+      padding: 0.5rem;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      resize: vertical;
+      transition: border-color 0.3s, background-color 0.3s, color 0.3s;
+      background: white;
+      color: var(--dark-color);
+    }
+    body.dark-mode #admin-form input, body.dark-mode #admin-form textarea {
+      background: #333;
+      color: var(--text-dark);
+      border-color: #555;
+    }
+    #admin-form input:focus, #admin-form textarea:focus {
+      border-color: var(--accent-color);
+      outline: none;
+      box-shadow: 0 0 5px var(--accent-color);
+    }
+    #admin-form button {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 0.7rem 1.5rem;
+      font-size: 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    #admin-form button:hover, #admin-form button:focus {
+      background-color: var(--accent-color);
+      outline: none;
+    }
+    #show-admin-btn {
+      display: block;
+      margin: 2rem auto 1rem;
+      padding: 0.7rem 1.5rem;
+      font-size: 1rem;
+      cursor: pointer;
+      background-color: var(--secondary-color);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      transition: background-color 0.3s;
+      max-width: 220px;
+      outline-offset: 2px;
+    }
+    #show-admin-btn:hover, #show-admin-btn:focus {
+      background-color: var(--accent-color);
+      outline: 2px solid var(--accent-color);
+      outline-offset: 2px;
+    }
+    /* Style pour l'image Bible ouverte */
+    .bible-image-container {
+      text-align: center;
+      margin: 1.5rem 0;
+    }
+    .bible-image-container img {
+      max-width: 300px;
+      width: 80%;
+      height: auto;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      transition: box-shadow 0.3s;
+    }
+    body.dark-mode .bible-image-container img {
+      box-shadow: 0 4px 15px rgba(255,255,255,0.2);
+    }
+    /* Notification */
+    #notification {
+      max-width: 700px;
+      margin: 1rem auto;
+      padding: 1rem 1.5rem;
+      border-radius: 6px;
+      font-weight: 600;
+      text-align: center;
+      display: none;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    #notification.success {
+      background-color: var(--success-color);
+      color: white;
+      box-shadow: 0 0 10px var(--success-color);
+    }
+    #notification.error {
+      background-color: var(--error-color);
+      color: white;
+      box-shadow: 0 0 10px var(--error-color);
+    }
+    /* Sections cachées */
+    section {
+      display: none;
+    }
+    section.active {
+      display: block;
+    }
+    /* Recherche */
+    #search-input {
+      width: 100%;
+      max-width: 400px;
+      padding: 0.5rem;
+      margin-bottom: 1rem;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+      transition: border-color 0.3s;
+      background: white;
+      color: var(--dark-color);
+    }
+    body.dark-mode #search-input {
+      background: #333;
+      color: var(--text-dark);
+      border-color: #555;
+    }
+    #search-input:focus {
+      border-color: var(--accent-color);
+      outline: none;
+      box-shadow: 0 0 5px var(--accent-color);
+    }
+    /* Commentaires */
+    #comments-section {
+      max-width: 700px;
+      margin: 2rem auto;
+      background: white;
+      border-radius: 8px;
+      padding: 1rem 1.5rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      transition: background-color 0.3s, color 0.3s;
+    }
+    body.dark-mode #comments-section {
+      background: #222;
+      color: var(--text-dark);
+      box-shadow: 0 2px 10px rgba(255,255,255,0.1);
+    }
+    #comments-section h3 {
+      margin-top: 0;
+      color: var(--primary-color);
+    }
+    body.dark-mode #comments-section h3 {
+      color: var(--accent-color);
+    }
+    #comments-list {
+      max-height: 300px;
+      overflow-y: auto;
+      margin-bottom: 1rem;
+      border: 1px solid #ccc;
+      padding: 0.5rem;
+      border-radius: 4px;
+      background: #fafafa;
+      color: #333;
+    }
+    body.dark-mode #comments-list {
+      background: #333;
+      color: var(--text-dark);
+      border-color: #555;
+    }
+    .comment {
+      border-bottom: 1px solid #ddd;
+      padding: 0.5rem 0;
+    }
+    body.dark-mode .comment {
+      border-color: #444;
+    }
+    .comment:last-child {
+      border-bottom: none;
+    }
+    #comment-form textarea {
+      width: 100%;
+      resize: vertical;
+      min-height: 60px;
+      padding: 0.5rem;
+      font-size: 1rem;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      margin-bottom: 0.5rem;
+      background: white;
+      color: var(--dark-color);
+      transition: border-color 0.3s;
+    }
+    body.dark-mode #comment-form textarea {
+      background: #333;
+      color: var(--text-dark);
+      border-color: #555;
+    }
+    #comment-form textarea:focus {
+      border-color: var(--accent-color);
+      outline: none;
+      box-shadow: 0 0 5px var(--accent-color);
+    }
+    #comment-form button {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    #comment-form button:hover, #comment-form button:focus {
+      background-color: var(--accent-color);
+      outline: none;
+    }
+    /* Mode sombre bouton */
+    #dark-mode-toggle {
+      position: fixed;
+      bottom: 1rem;
+      right: 1rem;
+      background-color: var(--secondary-color);
+      color: white;
+      border: none;
+      padding: 0.7rem 1rem;
+      border-radius: 24px;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+      transition: background-color 0.3s;
+      z-index: 1000;
+    }
+    #dark-mode-toggle:hover, #dark-mode-toggle:focus {
+      background-color: var(--accent-color);
+      outline: none;
+    }
+    /* Quill editor */
+    #editor-container {
+      height: 150px;
+      margin-bottom: 1rem;
+      background: white;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    body.dark-mode #editor-container {
+      background: #333;
+      color: var(--text-dark);
+      border-color: #555;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Charité</h1>
+    <p>Votre compagnon spirituel quotidien</p>
+  </header>
+
+  <nav role="navigation" aria-label="Menu principal">
+    <a href="#accueil" class="active" aria-current="page">Accueil</a>
+    <a href="#mediations">Méditations</a>
+    <a href="#cantiques">Cantiques</a>
+    <a href="#partage">Partage</a>
+  </nav>
+
+  <div class="container" role="main">
+    <!-- Accueil -->
+    <section id="accueil" class="active" tabindex="-1">
+      <div class="bible-image-container">
+        <img src="amen.jpg" alt="Bible ouverte" />
+      </div>
+
+      <label for="search-input" style="font-weight:600;">Rechercher un verset :</label>
+      <input type="search" id="search-input" placeholder="Mot-clé, référence ou date (YYYY-MM-DD)" aria-label="Recherche de verset" />
+
+      <div id="verse-du-jour" class="verse-of-the-day" aria-live="polite" aria-atomic="true"></div>
+
+      <h2>Versets précédents</h2>
+      <div id="anciens-versets" aria-live="polite" aria-atomic="true"></div>
+
+      <button id="show-admin-btn" aria-expanded="false" aria-controls="admin-form">Ajouter un verset (admin)</button>
+
+      <form id="admin-form" aria-label="Formulaire d'ajout de verset et audio" novalidate>
+        <label for="admin-password">Mot de passe admin</label>
+        <input type="password" id="admin-password" placeholder="Mot de passe admin" required aria-required="true" autocomplete="current-password" />
+
+        <label for="new-reference">Référence (ex: Jean 3:16)</label>
+        <input type="text" id="new-reference" placeholder="Référence (ex: Jean 3:16)" required aria-required="true" />
+
+        <label for="new-date">Date du verset</label>
+        <input type="date" id="new-date" required aria-required="true" max="9999-12-31" />
+
+        <label for="new-audio">URL ou chemin du fichier audio</label>
+        <input type="url" id="new-audio" placeholder="https://exemple.com/audio.mp3" required aria-required="true" />
+
+        <label for="new-verse">Texte du verset (éditeur riche)</label>
+        <div id="editor-container"></div>
+
+        <button type="submit" id="submit-btn">Ajouter le verset</button>
+      </form>
+
+      <div id="notification" role="alert" aria-live="assertive"></div>
+
+      <div class="features">
+        <div class="feature-card">
+          <h3>Bible Complète</h3>
+          <p>Accédez à toute la Bible en plusieurs versions et langues. Recherchez par livre, chapitre ou mot-clé.</p>
+          <ul>
+            <li><a href="https://www.bible.com/fr/bible/93/GEN.1.LSG" target="_blank" rel="noopener noreferrer">Lire la Bible Louis Segond (YouVersion)</a></li>
+            <li><a href="https://www.biblegateway.com/versions/Louis-Segond-Version-LSG-Bible/" target="_blank" rel="noopener noreferrer">Lire la Bible sur Bible Gateway</a></li>
+          </ul>
+        </div>
+
+        <div class="feature-card">
+          <h3>Plans de Lecture</h3>
+          <p>Suivez des plans de lecture biblique thématiques ou chronologiques pour grandir spirituellement.</p>
+        </div>
+
+        <div class="feature-card">
+          <h3>Méditations Quotidiennes</h3>
+          <p>Recevez chaque jour une pensée édifiante pour nourrir votre foi et votre relation avec Dieu.</p>
+          <audio src="audio_2.mp3" controls preload="metadata" aria-label="Audio méditation quotidienne">Votre navigateur ne supporte pas l'audio</audio>
+        </div>
+
+        <div class="feature-card">
+          <h3>Cantiques Chrétiens</h3>
+          <p>Accédez à une collection de cantiques et chants chrétiens avec paroles et accords.</p>
+        </div>
+
+        <div class="feature-card">
+          <h3>Communauté</h3>
+          <p>Partagez vos réflexions, témoignages et priez les uns pour les autres dans un espace sécurisé.</p>
+        </div>
+      </div>
+
+      <!-- Section commentaires -->
+      <div id="comments-section" aria-label="Commentaires">
+        <h3>Commentaires sur le verset du jour</h3>
+        <div id="comments-list" tabindex="0" aria-live="polite" aria-relevant="additions"></div>
+        <form id="comment-form" aria-label="Ajouter un commentaire">
+          <textarea id="comment-input" placeholder="Votre commentaire..." required aria-required="true"></textarea>
+          <button type="submit">Envoyer</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- Sections cachées -->
+    <section id="bible" tabindex="-1">
+      <h2>La Bible</h2>
+      <p>Contenu de la section Bible...</p>
+    </section>
+    <section id="prieres" tabindex="-1">
+      <h2>Prières</h2>
+      <p>Contenu de la section Prières...</p>
+    </section>
+    <section id="mediations" tabindex="-1">
+      <h2>Méditations</h2>
+      <p>Contenu de la section Méditations...</p>
+    </section>
+    <section id="cantiques" tabindex="-1">
+      <h2>Cantiques</h2>
+      <p>Contenu de la section Cantiques...</p>
+    </section>
+    <section id="partage" tabindex="-1">
+      <h2>Partage</h2>
+      <p>Contenu de la section Partage...</p>
+    </section>
+  </div>
+
+  <button id="dark-mode-toggle" aria-pressed="false" aria-label="Activer mode sombre">🌙 Mode sombre</button>
+
+  <footer>
+    <p>&copy; 2025 Charité - Application Chrétienne. Tous droits réservés.</p>
+    <p>"Que la grâce du Seigneur Jésus-Christ, l'amour de Dieu, et la communion du Saint-Esprit soient avec vous tous." (2 Corinthiens 13:14)</p>
+  </footer>
+
+  <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+  <script>
+    const API_BASE = 'http://localhost:3000/api'; // Modifiez selon l'adresse de votre backend
+    const ADMIN_PASSWORD = "2025";
+
+    const elements = {
+      searchInput: document.getElementById('search-input'),
+      containerJour: document.getElementById('verse-du-jour'),
+      containerAnciens: document.getElementById('anciens-versets'),
+      showAdminBtn: document.getElementById('show-admin-btn'),
+      adminForm: document.getElementById('admin-form'),
+      notification: document.getElementById('notification'),
+      commentForm: document.getElementById('comment-form'),
+      commentInput: document.getElementById('comment-input'),
+      commentsList: document.getElementById('comments-list'),
+      quill: new Quill('#editor-container', {
+        theme: 'snow',
+        placeholder: 'Écrivez le texte du verset ici...',
+        modules: {
+          toolbar: [
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ 'header': [1, 2, 3, false] }],
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            ['link', 'clean']
+          ]
+        }
+      })
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      setupEventListeners();
+      loadAndRenderVersets();
+      applyDarkMode(loadDarkMode());
+    });
+
+    function setupEventListeners() {
+      elements.adminForm.addEventListener('submit', handleAdminSubmit);
+      elements.showAdminBtn.addEventListener('click', () => {
+        if (elements.adminForm.style.display === 'block') {
+          elements.adminForm.style.display = 'none';
+          elements.showAdminBtn.setAttribute('aria-expanded', 'false');
+        } else {
+          elements.adminForm.style.display = 'block';
+          elements.showAdminBtn.setAttribute('aria-expanded', 'true');
+        }
+      });
+      elements.searchInput.addEventListener('input', handleSearch);
+      elements.commentForm.addEventListener('submit', handleCommentSubmit);
+      document.getElementById('dark-mode-toggle').addEventListener('click', toggleDarkMode);
+    }
+
+    async function loadAndRenderVersets() {
+      try {
+        const versets = await fetchVersets();
+        renderVersets(versets);
+        if (versets.length > 0) {
+          loadAndRenderComments(versets[0].date);
+        }
+      } catch (err) {
+        showNotification("Erreur lors du chargement des versets.", "error");
+      }
+    }
+
+    async function fetchVersets() {
+      const res = await fetch(`${API_BASE}/versets`);
+      if (!res.ok) throw new Error('Erreur API versets');
+      const data = await res.json();
+      return data.sort((a,b) => new Date(b.date) - new Date(a.date));
+    }
+
+    function renderVersets(versets) {
+      if (versets.length === 0) {
+        elements.containerJour.innerHTML = "<p>Aucun verset disponible.</p>";
+        elements.containerAnciens.innerHTML = "";
+        return;
+      }
+      const todayVerse = versets[0];
+      elements.containerJour.innerHTML = `
+        <div class="verse-text">${todayVerse.verse}</div>
+        <div class="verse-ref">${todayVerse.reference} - <time datetime="${todayVerse.date}">${todayVerse.date}</time></div>
+        <audio src="${todayVerse.audio}" controls preload="metadata" aria-label="Audio du verset du jour"></audio>
+      `;
+      elements.containerAnciens.innerHTML = versets.slice(1).map(v => `
+        <div class="verse-of-the-day" style="margin-bottom:0.5rem; border-left-color: var(--secondary-color);">
+          <div
